@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { Users, Briefcase, DollarSign, TrendingUp } from 'lucide-react'
 import { QuickActions } from '@/components/dashboard/quick-actions'
-import { RevenueChart } from '@/components/dashboard/revenue-chart'
+import { RevenueChartWrapper } from '@/components/dashboard/revenue-chart-wrapper'
+import { RecentProjectsWrapper } from '@/components/dashboard/recent-projects-wrapper'
 import { AddClientModal } from '@/components/modals/add-client-modal'
 import { AddProjectModal } from '@/components/modals/add-project-modal'
 
@@ -122,7 +123,7 @@ export function DashboardClient({
           {/* Revenue Chart */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-300">
             <h2 className="text-xl font-bold text-white mb-6">Revenue Overview</h2>
-            <RevenueChart projects={allProjects} />
+            <RevenueChartWrapper projects={allProjects} />
           </div>
 
           {/* Quick Stats */}
@@ -152,48 +153,11 @@ export function DashboardClient({
         {/* Recent Projects */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-300">
           <h2 className="text-xl font-bold text-white mb-6">Recent Projects</h2>
-          {projects && projects.length > 0 ? (
-            <div className="space-y-3">
-              {projects.map((project) => (
-                <div
-                  key={project.id}
-                  className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors"
-                >
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-white mb-1">{project.title}</h3>
-                    <p className="text-sm text-zinc-400">
-                      {project.client?.name && <span className="text-violet-400">{project.client.name}</span>}
-                      {project.client?.name && ' • '}
-                      Budget: ${project.budget.toLocaleString('en-US')}
-                    </p>
-                  </div>
-                  <span
-                    className={`px-3 py-1 text-xs font-medium rounded-full border ${getStatusColor(
-                      project.status
-                    )}`}
-                  >
-                    {project.status.replace('_', ' ').toUpperCase()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-violet-500/10 border border-violet-500/20 mb-4">
-                <Briefcase className="w-8 h-8 text-violet-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">No projects yet</h3>
-              <p className="text-zinc-400 mb-6">
-                Get started by creating your first project and tracking your progress.
-              </p>
-              <button
-                onClick={() => setShowProjectModal(true)}
-                className="px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-violet-500/50"
-              >
-                Create Your First Project
-              </button>
-            </div>
-          )}
+          <RecentProjectsWrapper 
+            projects={projects}
+            getStatusColor={getStatusColor}
+            onCreateProject={() => setShowProjectModal(true)}
+          />
         </div>
       </div>
 
