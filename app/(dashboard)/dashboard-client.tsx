@@ -91,27 +91,27 @@ export function DashboardClient({
   return (
     <>
       <div>
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-violet-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent mb-2">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-violet-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent mb-2">
             Dashboard
           </h1>
-          <p className="text-zinc-400">Welcome back! Here's what's happening with your business today.</p>
+          <p className="text-sm md:text-base text-zinc-400">Welcome back! Here's what's happening with your business today.</p>
         </div>
 
-        {/* Stats Grid with Glassmorphism */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Stats Grid with Glassmorphism - Responsive: 1 col mobile, 2 col tablet, 4 col desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           {stats.map((stat, index) => (
             <div
               key={index}
-              className={`group relative bg-zinc-900 border ${stat.borderColor} rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-2xl ${stat.glowColor} cursor-pointer`}
+              className={`group relative bg-zinc-900 border ${stat.borderColor} rounded-2xl p-4 md:p-6 transition-all duration-300 hover:scale-105 hover:shadow-2xl ${stat.glowColor} cursor-pointer`}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-zinc-400 mb-1">{stat.title}</p>
-                  <p className="text-3xl font-bold text-white">{stat.value}</p>
+                  <p className="text-xs md:text-sm font-medium text-zinc-400 mb-1">{stat.title}</p>
+                  <p className="text-2xl md:text-3xl font-bold text-white">{stat.value}</p>
                 </div>
-                <div className={`p-4 rounded-xl ${stat.bgColor} border ${stat.borderColor}`}>
-                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                <div className={`p-3 md:p-4 rounded-xl ${stat.bgColor} border ${stat.borderColor}`}>
+                  <stat.icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
                 </div>
               </div>
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -119,40 +119,40 @@ export function DashboardClient({
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Revenue Chart */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-300">
-            <h2 className="text-xl font-bold text-white mb-6">Revenue Overview</h2>
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 md:p-6 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-300">
+            <h2 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6">Revenue Overview</h2>
             <RevenueChartWrapper projects={allProjects} />
           </div>
 
           {/* Quick Stats */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-300">
-            <h2 className="text-xl font-bold text-white mb-6">Quick Insights</h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
-                <span className="text-zinc-400">Average Project Value</span>
-                <span className="text-xl font-bold text-white">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 md:p-6 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-300">
+            <h2 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6">Quick Insights</h2>
+            <div className="space-y-3 md:space-y-4">
+              <div className="flex items-center justify-between p-3 md:p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
+                <span className="text-sm md:text-base text-zinc-400">Average Project Value</span>
+                <span className="text-lg md:text-xl font-bold text-white">
                   ${averageProjectValue.toLocaleString('en-US')}
                 </span>
               </div>
-              <div className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
-                <span className="text-zinc-400">Completion Rate</span>
-                <span className="text-xl font-bold text-emerald-400">
+              <div className="flex items-center justify-between p-3 md:p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
+                <span className="text-sm md:text-base text-zinc-400">Completion Rate</span>
+                <span className="text-lg md:text-xl font-bold text-emerald-400">
                   {completionRate}%
                 </span>
               </div>
-              <div className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
-                <span className="text-zinc-400">Active Clients</span>
-                <span className="text-xl font-bold text-violet-400">{totalClients}</span>
+              <div className="flex items-center justify-between p-3 md:p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
+                <span className="text-sm md:text-base text-zinc-400">Active Clients</span>
+                <span className="text-lg md:text-xl font-bold text-violet-400">{totalClients}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Recent Projects */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-300">
-          <h2 className="text-xl font-bold text-white mb-6">Recent Projects</h2>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 md:p-6 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-300">
+          <h2 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6">Recent Projects</h2>
           <RecentProjectsWrapper 
             projects={projects}
             getStatusColor={getStatusColor}
