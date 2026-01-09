@@ -11,7 +11,7 @@ const generateTasksSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Check if user is authenticated
     const {
@@ -190,14 +190,16 @@ function generateTaskSuggestions(data: z.infer<typeof generateTasksSchema>) {
     { title: 'Final delivery', estimatedHours: 4, priority: 'low' },
   ]
 
-  const tasks = baseTasks[data.projectType]?.[data.complexity] || defaultTasks
+  const projectTasks = data.projectType === 'other' 
+    ? defaultTasks 
+    : baseTasks[data.projectType]?.[data.complexity] || defaultTasks
 
   // Adjust tasks based on timeline
-  return tasks.map(task => ({
+  return projectTasks.map((task: { title: string; estimatedHours: number; priority: string }) => ({
     ...task,
     estimatedHours: Math.round(task.estimatedHours * getTimelineMultiplier(data.timeline)),
     category: categorizeTask(task.title),
-    dependencies: getTaskDependencies(task.title, tasks),
+    dependencies: getTaskDependencies(task.title, projectTasks),
   }))
 }
 
