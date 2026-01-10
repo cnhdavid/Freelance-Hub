@@ -18,12 +18,9 @@ export async function POST(request: NextRequest) {
       data: { session },
     } = await supabase.auth.getSession()
 
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    // Guest Mode: Allow task generation without authentication
+    // Tasks won't be saved to database for guests
+    const isGuest = !session
 
     const body = await request.json()
     const validatedData = generateTasksSchema.parse(body)
@@ -39,6 +36,8 @@ export async function POST(request: NextRequest) {
         projectType: validatedData.projectType,
         complexity: validatedData.complexity,
         estimatedDuration: calculateEstimatedDuration(validatedData),
+        isGuest,
+        message: isGuest ? 'Sign in to save these tasks to your projects' : undefined,
       }
     })
 

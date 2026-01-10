@@ -11,7 +11,7 @@ interface DashboardHeaderProps {
       full_name?: string
       avatar_url?: string
     }
-  }
+  } | null
   onMenuClick?: () => void
 }
 
@@ -24,7 +24,10 @@ export default function DashboardHeader({ user, onMenuClick }: DashboardHeaderPr
     window.location.href = '/login'
   }
 
-  const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
+  const isGuest = !user
+  const displayName = isGuest 
+    ? 'Guest' 
+    : user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
 
   return (
     <header className="bg-zinc-950 border-b border-zinc-800 sticky top-0 z-40 backdrop-blur-xl bg-zinc-950/80">
@@ -68,7 +71,7 @@ export default function DashboardHeader({ user, onMenuClick }: DashboardHeaderPr
               className="flex items-center gap-2 md:gap-3 text-sm rounded-xl hover:bg-zinc-900 p-2 transition-all"
             >
               <div className="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-full flex items-center justify-center ring-2 ring-violet-500/20">
-                {user.user_metadata?.avatar_url ? (
+                {!isGuest && user?.user_metadata?.avatar_url ? (
                   <img
                     src={user.user_metadata.avatar_url}
                     alt="Profile"
@@ -87,14 +90,23 @@ export default function DashboardHeader({ user, onMenuClick }: DashboardHeaderPr
                 <div className="py-2">
                   <div className="px-4 py-3 border-b border-zinc-800">
                     <p className="text-sm font-medium text-white">{displayName}</p>
-                    <p className="text-xs text-zinc-400 mt-1">{user.email}</p>
+                    <p className="text-xs text-zinc-400 mt-1">{isGuest ? 'Not signed in' : user?.email}</p>
                   </div>
-                  <button
-                    onClick={handleSignOut}
-                    className="block w-full text-left px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-                  >
-                    Sign out
-                  </button>
+                  {isGuest ? (
+                    <button
+                      onClick={() => window.location.href = '/login'}
+                      className="block w-full text-left px-4 py-2 text-sm text-violet-400 hover:text-violet-300 hover:bg-zinc-800 transition-colors"
+                    >
+                      Sign in to save progress
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleSignOut}
+                      className="block w-full text-left px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                    >
+                      Sign out
+                    </button>
+                  )}
                 </div>
               </div>
             )}

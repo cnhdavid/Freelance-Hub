@@ -22,7 +22,7 @@ export async function getProjects() {
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
-    return { data: null, error: 'Unauthorized' }
+    return { data: [], error: null }
   }
 
   const { data, error } = await supabase
@@ -48,7 +48,7 @@ export async function createProject(formData: {
   
   if (!user) {
     console.error('Project creation failed: User not authenticated')
-    return { data: null, error: 'Unauthorized' }
+    return { data: null, error: 'Please sign in to save projects. Guest mode data is temporary.' }
   }
 
   console.log('Creating project for user:', user.id)
@@ -87,7 +87,7 @@ export async function deleteProject(projectId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
-    return { error: 'Unauthorized' }
+    return { error: 'Please sign in to delete projects. Guest mode data is temporary.' }
   }
 
   const { error } = await supabase
@@ -115,7 +115,7 @@ export async function updateProject(projectId: string, formData: {
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
-    return { data: null, error: 'Unauthorized' }
+    return { data: null, error: 'Please sign in to update projects. Guest mode data is temporary.' }
   }
 
   const { data, error } = await supabase

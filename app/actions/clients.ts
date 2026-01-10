@@ -23,8 +23,8 @@ export async function getClients() {
   console.log('[Server] User authenticated:', !!user, 'User ID:', user?.id)
   
   if (!user) {
-    console.log('[Server] ❌ No user found - returning Unauthorized')
-    return { data: null, error: 'Unauthorized' }
+    console.log('[Server] Guest mode - returning empty data')
+    return { data: [], error: null }
   }
 
   console.log('[Server] Querying clients table for user:', user.id)
@@ -60,7 +60,7 @@ export async function createClient(formData: {
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
-    return { data: null, error: 'Unauthorized' }
+    return { data: null, error: 'Please sign in to save clients. Guest mode data is temporary.' }
   }
 
   const { data, error } = await supabase
@@ -87,7 +87,7 @@ export async function deleteClient(clientId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
-    return { error: 'Unauthorized' }
+    return { error: 'Please sign in to delete clients. Guest mode data is temporary.' }
   }
 
   const { error } = await supabase
@@ -113,7 +113,7 @@ export async function updateClient(clientId: string, formData: {
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
-    return { data: null, error: 'Unauthorized' }
+    return { data: null, error: 'Please sign in to update clients. Guest mode data is temporary.' }
   }
 
   const { data, error } = await supabase
