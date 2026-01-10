@@ -13,7 +13,7 @@ interface DashboardLayoutClientProps {
       full_name?: string
       avatar_url?: string
     }
-  }
+  } | null
   children: React.ReactNode
 }
 

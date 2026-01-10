@@ -31,21 +31,20 @@ export async function updateSession(req: NextRequest) {
     }
   )
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  // Suppress refresh token errors for guest users
+  let session = null
+  try {
+    const { data } = await supabase.auth.getSession()
+    session = data.session
+  } catch (error) {
+    // Ignore auth errors for guest mode - no session is expected
+  }
 
   // Debug log
   console.log('Middleware - Session found:', !!session, 'Path:', req.nextUrl.pathname)
 
-  // Redirect to login if accessing protected routes without session
-  if (!session && req.nextUrl.pathname.startsWith('/dashboard')) {
-    console.log('Middleware - Redirecting to login (no session)')
-    const redirectUrl = req.nextUrl.clone()
-    redirectUrl.pathname = '/login'
-    redirectUrl.searchParams.set('redirectedFrom', req.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
-  }
+  // Guest Mode: Allow access without authentication
+  // No redirect to login for unauthenticated users
 
   // Redirect to dashboard if accessing auth routes with session
   if (session && (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/signup')) {

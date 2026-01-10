@@ -14,19 +14,13 @@ export default async function DashboardLayout({
     data: { session },
   } = await supabase.auth.getSession()
 
-  if (!session) {
-    redirect('/login')
-  }
-
-  // Get user data
+  // Get user data (may be null for guest users)
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/login')
-  }
-
+  // Guest Mode: Allow access without authentication
+  // Pass null user to indicate guest mode
   return (
     <DashboardLayoutClient user={user}>
       <PageTransition>{children}</PageTransition>

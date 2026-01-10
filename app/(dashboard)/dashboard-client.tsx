@@ -7,6 +7,7 @@ import { RevenueChartWrapper } from '@/components/dashboard/revenue-chart-wrappe
 import { RecentProjectsWrapper } from '@/components/dashboard/recent-projects-wrapper'
 import { AddClientModal } from '@/components/modals/add-client-modal'
 import { AddProjectModal } from '@/components/modals/add-project-modal'
+import { GuestModeBanner } from '@/components/dashboard/guest-mode-banner'
 
 interface DashboardClientProps {
   totalClients: number
@@ -17,6 +18,7 @@ interface DashboardClientProps {
   averageProjectValue: number
   projects: any[]
   allProjects: any[]
+  isGuest?: boolean
 }
 
 export function DashboardClient({
@@ -28,6 +30,7 @@ export function DashboardClient({
   averageProjectValue,
   projects,
   allProjects,
+  isGuest = false,
 }: DashboardClientProps) {
   const [showClientModal, setShowClientModal] = useState(false)
   const [showProjectModal, setShowProjectModal] = useState(false)
@@ -97,6 +100,8 @@ export function DashboardClient({
           </h1>
           <p className="text-sm md:text-base text-zinc-400">Welcome back! Here's what's happening with your business today.</p>
         </div>
+
+        {isGuest && <GuestModeBanner />}
 
         {/* Stats Grid with Glassmorphism - Responsive: 1 col mobile, 2 col tablet, 4 col desktop */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">

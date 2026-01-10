@@ -8,8 +8,21 @@ export default async function DashboardPage() {
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Guest Mode: Provide default empty data for guests
   if (!user) {
-    return null
+    return (
+      <DashboardClient
+        totalClients={0}
+        totalProjects={0}
+        activeProjects={0}
+        totalRevenue={0}
+        completionRate={0}
+        averageProjectValue={0}
+        projects={[]}
+        allProjects={[]}
+        isGuest={true}
+      />
+    )
   }
 
   const [clientsResult, projectsResult, recentProjectsResult] = await Promise.all([
@@ -67,6 +80,7 @@ export default async function DashboardPage() {
       averageProjectValue={averageProjectValue}
       projects={recentProjects}
       allProjects={completedProjects}
+      isGuest={false}
     />
   )
 }
