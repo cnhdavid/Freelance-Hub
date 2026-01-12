@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, Edit, Trash2, Calendar, DollarSign, X } from 'lucide-react'
+import { Plus, Edit, Trash2, Calendar, DollarSign, X, Download } from 'lucide-react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { Database } from '@/types/database'
 import { getClients } from '@/app/actions/clients'
 import { getProjects, createProject, updateProject, deleteProject } from '@/app/actions/projects'
+import { InvoiceDownloadLink } from '@/components/pdf/invoice-document'
+import { getStatusBadge } from '@/components/ui/status-badge'
 
 type Project = Database['public']['Tables']['projects']['Row']
 type Client = Database['public']['Tables']['clients']['Row']
@@ -52,11 +54,59 @@ export default function ProjectsPage() {
   const fetchProjects = async () => {
     try {
       console.log('[ProjectsPage] Fetching projects...')
+      
+      // Check if we're in guest mode
+      const guestUserId = localStorage.getItem('guestUserId')
+      
+      if (guestUserId) {
+        console.log('[ProjectsPage] Guest mode detected, fetching guest projects...')
+        const { getGuestProjects } = await import('@/app/actions/guest-data')
+        const result = await getGuestProjects(guestUserId)
+        
+        if (result.success && result.data) {
+          setProjects(result.data as any)
+          console.log('[ProjectsPage] ✅ Loaded', result.data.length, 'guest projects')
+        } else {
+          console.error('[ProjectsPage] ❌ Error fetching guest projects:', result.error)
+          setProjects([])
+        }
+        setLoading(false)
+        return
+      }
+      
+      // Regular authenticated user flow
       const result = await getProjects()
       console.log('[ProjectsPage] Projects result:', result)
       
       if (result.data) {
-        setProjects(result.data as Project[])
+        // Fetch client information for each project
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        if (user) {
+          const projectsWithClients = await Promise.all(
+            result.data.map(async (project: Project) => {
+              if (project.client_id) {
+                const { data: client } = await supabase
+                  .from('clients')
+                  .select('name, email, company')
+                  .eq('id', project.client_id)
+                  .single()
+                
+                return {
+                  ...project,
+                  client: client || undefined
+                }
+              }
+              return project
+            })
+          )
+          
+          setProjects(projectsWithClients)
+        } else {
+          setProjects(result.data as Project[])
+        }
+        
         console.log('[ProjectsPage] ✅ Loaded', result.data.length, 'projects')
       } else if (result.error) {
         console.error('[ProjectsPage] ❌ Error:', result.error)
@@ -73,6 +123,26 @@ export default function ProjectsPage() {
   const fetchClients = async () => {
     try {
       console.log('[ProjectsPage] Fetching clients...')
+      
+      // Check if we're in guest mode
+      const guestUserId = localStorage.getItem('guestUserId')
+      
+      if (guestUserId) {
+        console.log('[ProjectsPage] Guest mode detected, fetching guest clients...')
+        const { getGuestClients } = await import('@/app/actions/guest-data')
+        const result = await getGuestClients(guestUserId)
+        
+        if (result.success && result.data) {
+          setClients(result.data as Client[])
+          console.log('[ProjectsPage] ✅ Loaded', result.data.length, 'guest clients')
+        } else {
+          console.error('[ProjectsPage] ❌ Error fetching guest clients:', result.error)
+          setClients([])
+        }
+        return
+      }
+      
+      // Regular authenticated user flow
       const result = await getClients()
       console.log('[ProjectsPage] Clients result:', result)
       
@@ -173,17 +243,6 @@ export default function ProjectsPage() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'planning': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-      case 'in_progress': return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-      case 'completed': return 'bg-green-500/10 text-green-400 border-green-500/20'
-      case 'on_hold': return 'bg-gray-500/10 text-gray-400 border-gray-500/20'
-      case 'cancelled': return 'bg-red-500/10 text-red-400 border-red-500/20'
-      default: return 'bg-gray-500/10 text-gray-400 border-gray-500/20'
-    }
-  }
-
   if (loading) {
     return <div className="flex justify-center items-center h-64 text-zinc-400">Loading...</div>
   }
@@ -251,9 +310,7 @@ export default function ProjectsPage() {
                     {(project as any).clients?.name || 'No Client'}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full border ${getStatusColor(project.status)}`}>
-                      {project.status.replace('_', ' ')}
-                    </span>
+                    {getStatusBadge(project.status).element}
                   </td>
                   <td className="px-6 py-4 text-sm text-zinc-400">
                     <div className="flex items-center">
@@ -273,6 +330,23 @@ export default function ProjectsPage() {
                   </td>
                   <td className="px-6 py-4 text-sm font-medium">
                     <div className="flex items-center gap-2">
+                      {project.status === 'completed' && (
+                        <InvoiceDownloadLink
+                          project={{
+                            id: project.id,
+                            title: project.title,
+                            description: project.description || undefined,
+                            budget: project.budget,
+                            created_at: project.created_at,
+                            deadline: project.deadline || undefined,
+                            client: (project as any).client
+                          }}
+                          className="flex items-center gap-1 px-2 py-1.5 text-xs text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-colors font-medium"
+                        >
+                          <Download className="w-3 h-3" />
+                          Invoice
+                        </InvoiceDownloadLink>
+                      )}
                       <button
                         onClick={() => handleEdit(project)}
                         className="p-2 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded-lg transition-colors"
@@ -307,9 +381,7 @@ export default function ProjectsPage() {
                 {project.description && (
                   <p className="text-sm text-zinc-400 mb-2">{project.description}</p>
                 )}
-                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(project.status)}`}>
-                  {project.status.replace('_', ' ')}
-                </span>
+                {getStatusBadge(project.status).element}
               </div>
             </div>
 
@@ -337,6 +409,23 @@ export default function ProjectsPage() {
             </div>
 
             <div className="flex gap-2">
+              {project.status === 'completed' && (
+                <InvoiceDownloadLink
+                  project={{
+                    id: project.id,
+                    title: project.title,
+                    description: project.description || undefined,
+                    budget: project.budget,
+                    created_at: project.created_at,
+                    deadline: project.deadline || undefined,
+                    client: (project as any).client
+                  }}
+                  className="flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] text-sm text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-colors font-medium"
+                >
+                  <Download className="w-4 h-4" />
+                  Invoice
+                </InvoiceDownloadLink>
+              )}
               <button
                 onClick={() => handleEdit(project)}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] text-sm text-violet-400 hover:text-violet-300 bg-violet-500/10 hover:bg-violet-500/20 rounded-lg transition-colors font-medium"

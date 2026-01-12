@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Users, Mail, Building2, Phone, Trash2, Plus, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { ClientFormModal } from '@/components/clients/client-form-modal'
 import { deleteClient, type Client } from '@/app/actions/clients'
+import { getGuestClients } from '@/app/actions/guest-data'
 
 interface ClientsPageClientProps {
   initialClients: Client[]
@@ -16,6 +17,31 @@ export function ClientsPageClient({ initialClients, error }: ClientsPageClientPr
   const [showModal, setShowModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const loadGuestClients = async () => {
+      const guestUserId = localStorage.getItem('guestUserId')
+      
+      if (guestUserId && initialClients.length === 0) {
+        console.log('[ClientsPageClient] Loading guest clients for:', guestUserId)
+        setLoading(true)
+        
+        const result = await getGuestClients(guestUserId)
+        
+        if (result.success && result.data) {
+          console.log('[ClientsPageClient] Loaded', result.data.length, 'guest clients')
+          setClients(result.data as Client[])
+        } else {
+          console.error('[ClientsPageClient] Failed to load guest clients:', result.error)
+        }
+        
+        setLoading(false)
+      }
+    }
+    
+    loadGuestClients()
+  }, [initialClients])
 
   const filteredClients = clients.filter(
     (client) =>
